@@ -6,29 +6,26 @@ $wordleShare = "","","","","","",""
 
 while($true)
 {
-    $guess = Read-Host "($guessCount) Guess a 5-letter word"
+    $guess = Read-Host "`r`n($guessCount) Guess a 5-letter word"
 
-    if($guess -eq $word.Line) { Write-Host "Correct!"; $wordleShare[$guessCount] = "🟩"*5; break }
-    if($guess.Length -ne 5) { Write-Host "Guess must be 5 letters!"; continue }
-    if($guess -notin $wordList.Line) { Write-Host "Not a word!"; continue }
+    if($guess -eq $word.Line) { Write-Host "`r`nCorrect!"; $wordleShare[$guessCount - 1] = "🟩"*5; break }
+    if($guess.Length -ne 5) { Write-Host "Guess must be 5 letters!" -NoNewLine; continue }
+    if($guess -notin $wordList.Line) { Write-Host "Not a word!" -NoNewLine; continue }
 
     for($pos = 0; $pos -lt 5; $pos++)
     {
+        $writeColor = "DarkGray"
         $shareImage = "⬜"
-        if($guess[$pos] -eq $word.Line[$pos]) { Write-Host -Fore Green $guess[$pos] -NoNewLine; $shareImage = "🟩" }
-        elseif($guess[$pos] -in $word.Line.ToCharArray()) { Write-Host -Fore Yellow $guess[$pos] -NoNewLine; $shareImage = "🟨" }
-        else { Write-Host -Fore DarkGray "." -NoNewLine }
 
+        if($guess[$pos] -eq $word.Line[$pos]) { $writeColor = "Green";  $shareImage = "🟩" }
+        elseif(($guess[0..$pos] -eq $guess[$pos]).Count -le ($word.Line.ToCharArray() -eq $guess[$pos]).Count) { $writeColor = "Yellow"; $shareImage = "🟨" }
+
+        Write-Host -Fore $writeColor $guess[$pos] -NoNewLine;
         $wordleShare[$guessCount - 1] += $shareImage 
     }
 
-    $guessCount++
-    if($guessCount -eq 7) { Write-Host; Write-Host "Too many guesses! Try again tomorrow! The right word was: '$($word.Line)'"; break }
-
-    Write-Host
+    if($guessCount++ -eq 6) { Write-Host "`r`n`r`nToo many guesses! Try again tomorrow! The right word was: '$($word.Line)'"; break }
 }
 
-Write-Host
-
 Write-Host "PSWORDLE $($word.LineNumber) $guessCount/6`r`n"
-$wordleShare | ? { $_ }
+$wordleShare[0..$guessCount]
